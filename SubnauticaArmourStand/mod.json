@@ -1,0 +1,10 @@
+﻿{
+  "Id": "ArmourStand",
+  "DisplayName": "Armour Stand",
+  "Author": "Ovyerus",
+  "Version": "1.0.0",
+  "Enable": true,
+  "AssemblyName": "ArmourStand.dll",
+  "EntryMethod": "SubnauticaArmourStand.Main.Init",
+  "Config": {}
+}
