@@ -7,6 +7,13 @@ namespace SubnauticaArmourStand
         public Equipment Armour { get; private set; }
         public ChildObjectIdentifier ArmourRoot = null;
         private Constructable WorldInstance = null;
+        private static string[] SlotNames = new string[5] {
+            "Head",
+            "Body",
+            "Gloves",
+            "Foots",
+            "Tank"
+        };
 
         public override void Awake()
         {
@@ -36,13 +43,7 @@ namespace SubnauticaArmourStand
 
         private void SetSlots()
         {
-            Armour.AddSlots(new string[5] {
-                "Head",
-                "Body",
-                "Gloves",
-                "Foots",
-                "Tank"
-            });
+            Armour.AddSlots(SlotNames);
         }
 
         private void OnEquip(string slot, InventoryItem item) {
@@ -52,8 +53,12 @@ namespace SubnauticaArmourStand
 
         private void OnUnequip(string slot, InventoryItem item)
         {
-            // TODO: properly check if empty
-            WorldInstance.deconstructionAllowed = true;
+            bool empty = true;
+
+            foreach (string slotName in SlotNames)
+                empty &= Armour.GetTechTypeInSlot(slotName) == TechType.None;
+
+            WorldInstance.deconstructionAllowed = empty;
         }
 
         public void OnHandHover(GUIHand hand)

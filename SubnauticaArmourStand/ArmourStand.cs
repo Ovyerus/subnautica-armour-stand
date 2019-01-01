@@ -44,16 +44,24 @@ namespace SubnauticaArmourStand
             GameObject armourStand = Object.Instantiate(CraftData.GetPrefabForTechType(TechType.LabTrashcan)); // Temp model
             Constructable armourStandConstructable = armourStand.AddComponent<Constructable>();
 
-            // Remove trashcan and storage we dont need. Just the mode kthx.
+            // Remove trashcan and storage we dont need. Just the model kthx.
             GameObject.DestroyImmediate(armourStand.GetComponent<Trashcan>());
             GameObject.DestroyImmediate(armourStand.GetComponent<StorageContainer>());
 
             armourStand.AddComponent<ArmourStandBehaviour>();
 
+            // Placement rules.
+            armourStandConstructable.allowedOnConstructables = false;
+            armourStandConstructable.allowedOnCeiling = false;
             armourStandConstructable.allowedOnWall = false;
             armourStandConstructable.allowedOnGround = true;
+
             armourStandConstructable.allowedInSub = true;
+            armourStandConstructable.allowedInBase = true;
             armourStandConstructable.allowedOutside = true;
+
+            armourStandConstructable.rotationEnabled = true;
+
             armourStandConstructable.techType = this.TechType;
             armourStandConstructable.model = armourStand.transform.GetChild(0).gameObject;
 
