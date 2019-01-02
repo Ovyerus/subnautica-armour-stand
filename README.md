@@ -5,7 +5,6 @@ A mod for Subnautica that adds an armour stand used for storing & displaying the
 **CURRENTLY VERY HEAVY WIP**.
 
 ## TODO
-- Implement saving (currently contents aren't persistent)
 - Custom model (currently using trash can model)
 - Display currently stored suits in the world, - figure out how to get "equipped" models for the suits if possible, otherwise turn into a display case sort of thing with default world models.
 - Also perhaps let people pick up items without having to enter its inventory.

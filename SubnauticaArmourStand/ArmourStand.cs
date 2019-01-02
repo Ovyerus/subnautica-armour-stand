@@ -58,11 +58,11 @@ namespace SubnauticaArmourStand
 
             armourStandConstructable.allowedInSub = true;
             armourStandConstructable.allowedInBase = true;
-            armourStandConstructable.allowedOutside = true;
+            armourStandConstructable.allowedOutside = false;
 
             armourStandConstructable.rotationEnabled = true;
 
-            armourStandConstructable.techType = this.TechType;
+            armourStandConstructable.techType = TechType;
             armourStandConstructable.model = armourStand.transform.GetChild(0).gameObject;
 
             return armourStand;

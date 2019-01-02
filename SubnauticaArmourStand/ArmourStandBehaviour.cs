@@ -1,13 +1,19 @@
-﻿using UnityEngine;
+﻿using System.Reflection;
+using System.Collections.Generic;
+using UnityEngine;
+using ProtoBuf;
 
 namespace SubnauticaArmourStand
 {
+    [ProtoContract]
     class ArmourStandBehaviour : HandTarget, IHandTarget, IProtoEventListener, IProtoTreeEventListener
     {
         public Equipment Armour { get; private set; }
-        public ChildObjectIdentifier ArmourRoot = null;
-        private Constructable WorldInstance = null;
-        private static string[] SlotNames = new string[5] {
+        public ChildObjectIdentifier ArmourRoot;
+        private Constructable WorldInstance;
+        private DataSaver SaveData;
+        private string ID;
+        private static readonly string[] SlotNames = new string[5] {
             "Head",
             "Body",
             "Gloves",
@@ -20,6 +26,14 @@ namespace SubnauticaArmourStand
             base.Awake();
 
             if (WorldInstance == null) WorldInstance = GetComponentInChildren<Constructable>();
+
+            if (SaveData == null)
+            {
+                string id = GetComponentInParent<PrefabIdentifier>().Id;
+                SaveData = new DataSaver(id);
+                ID = id;
+            }
+
             if (Armour == null) Init();
         }
 
@@ -47,7 +61,7 @@ namespace SubnauticaArmourStand
         }
 
         private void OnEquip(string slot, InventoryItem item) {
-            // Don't allow deconsturction if full.
+            // Don't allow deconstruction if has items.
             WorldInstance.deconstructionAllowed = false;
         }
 
@@ -79,10 +93,59 @@ namespace SubnauticaArmourStand
             pda.Open(PDATab.Inventory);
         }
 
-        public void OnProtoSerialize(ProtobufSerializer serialiser) { }
-        public void OnProtoDeserialize(ProtobufSerializer serialiser) { }
+        // On save
+        public void OnProtoSerialize(ProtobufSerializer _)
+        {
+            Dictionary<string, int> saveDict = new Dictionary<string, int>();
 
-        public void OnProtoSerializeObjectTree(ProtobufSerializer serialiser) { }
-        public void OnProtoDeserializeObjectTree(ProtobufSerializer serialiser) { }
+            foreach (string slot in SlotNames)
+            {
+                InventoryItem item = Armour.GetItemInSlot(slot);
+
+                if (item == null) saveDict.Add(slot, (int)TechType.None);
+                else saveDict.Add(slot, (int)item.item.GetTechType());
+            }
+
+            SaveData.Save(saveDict);
+        }
+
+        public void OnProtoDeserialize(ProtobufSerializer _)
+        {
+            if (Armour == null) Init();
+
+            Armour.Clear();
+        }
+
+        public void OnProtoSerializeObjectTree(ProtobufSerializer _) { }
+  
+        // On load
+        public void OnProtoDeserializeObjectTree(ProtobufSerializer _)
+        {
+            if (SaveData.Load())
+            {
+                foreach (string slot in SlotNames)
+                {
+                    Armour.AddSlot(slot);
+
+                    TechType slotItem = (TechType)SaveData.Data.GetOrDefault(slot, (int)TechType.None);
+
+                    if (slotItem == TechType.None) continue;
+
+                    //Pickupable itemPickup = new Pickupable();
+                    //itemPickup.SetTechTypeOverride(slotItem);
+                    //InventoryItem item = new InventoryItem(itemPickup);
+
+                    GameObject itemObject = CraftData.InstantiateFromPrefab(slotItem);
+                    Pickupable itemPickupable = itemObject.GetComponent<Pickupable>();
+                    InventoryItem item = new InventoryItem(itemPickupable);
+
+                    Armour.AddItem(slot, item, true);
+                    typeof(Pickupable).GetMethod("Deactivate", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(itemPickupable, null);
+                }
+            }
+            else SetSlots();
+
+            Logger.Log($"Successfully loaded items for {ID}");
+        }
     }
 }
